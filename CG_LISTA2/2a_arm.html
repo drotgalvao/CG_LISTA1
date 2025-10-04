@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2a - Movimento de braço 2D</title>
+    <style>
+      body {
+        background: #222;
+        color: #eee;
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 18px auto;
+        padding: 12px;
+      }
+      canvas {
+        background: #fff;
+        border: 1px solid #999;
+        display: block;
+        width: 100%;
+        height: 480px;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+      }
+      button,
+      input {
+        padding: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>2a) Movimento de braço 2D</h2>
+      <canvas id="c"></canvas>
+      <div class="controls">
+        <button id="btn">Pausar</button>
+        <button id="btnRestart">Reiniciar</button>
+        <label
+          >Duração (s):
+          <input
+            id="duration"
+            type="number"
+            value="2"
+            step="0.1"
+            min="0.1"
+            style="width: 70px"
+        /></label>
+        <div id="status" style="margin-left: auto; color: #ccc"></div>
+      </div>
+
+      <p>
+        Comprimentos: braço = 2 unidades, antebraço = 3 unidades. Inicia
+        alinhado vertical (apontando para baixo) e termina com antebraço
+        alinhado horizontal (apontando para a direita). Velocidade angular do
+        antebraço é o dobro da do braço.
+      </p>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("c");
+      const ctx = canvas.getContext("2d");
+      const btn = document.getElementById("btn");
+      const btnRestart = document.getElementById("btnRestart");
+      const durationInput = document.getElementById("duration");
+      const status = document.getElementById("status");
+
+      function resize() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      // unidades -> pixels
+      const pixelsPerUnit = 60; // escala arbitrária
+      const L1 = 2 * pixelsPerUnit; // braço
+      const L2 = 3 * pixelsPerUnit; // antebraço
+
+      // ângulos (radianos). Sistema: 0 = +x (direita), +ccw.
+      // Inicial: ambos apontando para baixo => ângulo = -pi/2
+      const theta1_0 = -Math.PI / 2;
+      const theta2_abs_0 = -Math.PI / 2;
+
+      // Desejado final: antebraço absoluto alinhado horizontal -> 0
+      const theta2_abs_final = 0;
+
+      // Derivando mudanças consistentes com requisito: velocidade angular antebraço = 2 * velocidade braço
+      // Com condições iniciais de alinhamento relativo zero, resultará em:
+      // theta1_final = theta1_0 / 2  (conforme dedução)
+      const theta1_final = theta1_0 / 2; // -pi/4
+      const delta_theta1 = theta1_final - theta1_0; // positivo
+      const delta_theta2_abs = theta2_abs_final - theta2_abs_0; // pi/2
+
+      let startTime = null;
+      let paused = false;
+      let tPaused = 0;
+
+      function drawFrame(time) {
+        if (!startTime) startTime = time - tPaused;
+        if (!paused) {
+          // tempo simulado (s)
+        }
+
+        const duration = Math.max(0.001, Number(durationInput.value) || 2);
+        let t = (time - startTime) / 1000; // segundos
+        if (paused) {
+          t = tPaused / 1000;
+        }
+        const clamped = Math.min(Math.max(t, 0), duration);
+        const u = clamped / duration; // 0..1
+
+        // ângulos lineares no tempo (velocidades angulares constantes)
+        const theta1 = theta1_0 + delta_theta1 * u;
+        // theta_rel change equals delta_theta1 (porque theta_rel_dot = theta1_dot)
+        const theta_rel = theta1 - theta1_0;
+        const theta2_abs = theta1 + theta_rel; // = theta1 + (theta1-theta1_0)
+
+        // limpar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // origem (ombro) colocada à esquerda-central
+        const ox = canvas.width * 0.2;
+        const oy = canvas.height * 0.5;
+
+        // coordenadas do cotovelo
+        const ex = ox + L1 * Math.cos(theta1);
+        const ey = oy - L1 * Math.sin(theta1);
+
+        // coordenadas da mão
+        const hx = ex + L2 * Math.cos(theta2_abs);
+        const hy = ey - L2 * Math.sin(theta2_abs);
+
+        // desenhar segmentos
+        ctx.lineWidth = 8;
+        ctx.lineCap = "round";
+        // braço
+        ctx.strokeStyle = "#2c3e50";
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        // antebraço
+        ctx.strokeStyle = "#e67e22";
+        ctx.beginPath();
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(hx, hy);
+        ctx.stroke();
+
+        // juntas
+        ctx.fillStyle = "#34495e";
+        ctx.beginPath();
+        ctx.arc(ox, oy, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#c0392b";
+        ctx.beginPath();
+        ctx.arc(ex, ey, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#16a085";
+        ctx.beginPath();
+        ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // texto de debug
+        ctx.fillStyle = "#111";
+        ctx.font = "14px Arial";
+        ctx.fillText(`t=${clamped.toFixed(2)}s / ${duration}s`, 12, 18);
+        ctx.fillText(`θ_braço=${theta1.toFixed(3)} rad`, 12, 36);
+        ctx.fillText(`θ_antebraço_abs=${theta2_abs.toFixed(3)} rad`, 12, 54);
+        ctx.fillText(`θ_rel=${theta_rel.toFixed(3)} rad`, 12, 72);
+
+        // status e controles
+        status.textContent = `${Math.round(u * 100)}% — duração ${duration}s`;
+
+        // se não pausado e tempo < duration, continuar
+        if (!paused && t < duration + 0.001) requestAnimationFrame(drawFrame);
+      }
+
+      // controles
+      btn.addEventListener("click", () => {
+        paused = !paused;
+        if (!paused) {
+          // retomar
+          // ajustar startTime para manter continuidade
+          startTime = performance.now() - tPaused;
+          requestAnimationFrame(drawFrame);
+        } else {
+          // pausar: registrar tempo pausado
+          tPaused = performance.now() - startTime;
+        }
+        btn.textContent = paused ? "Retomar" : "Pausar";
+      });
+
+      btnRestart.addEventListener("click", () => {
+        startTime = performance.now();
+        tPaused = 0;
+        paused = false;
+        btn.textContent = "Pausar";
+        requestAnimationFrame(drawFrame);
+      });
+
+      // iniciar primeira vez
+      requestAnimationFrame(drawFrame);
+    </script>
+  </body>
+</html>

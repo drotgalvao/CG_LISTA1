@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3a - Círculo rolando internamente (top-down)</title>
+    <style>
+      body {
+        background: #222;
+        color: #eee;
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 18px auto;
+        padding: 12px;
+      }
+      canvas {
+        background: #fff;
+        border: 1px solid #999;
+        display: block;
+        width: 100%;
+        height: 600px;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+      }
+      button,
+      input {
+        padding: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>
+        3a) Círculo de raio 25 rolando na parede interna de um círculo de raio
+        100
+      </h2>
+      <canvas id="c"></canvas>
+      <div class="controls">
+        <button id="btn">Pausar</button>
+        <button id="restart">Reiniciar</button>
+        <div style="margin-left: auto" id="info"></div>
+      </div>
+      <p>
+        Rolamento interno sem deslizar. Uma volta completa ao redor do círculo
+        maior dura 4 segundos. Um ponto fixo no círculo menor está marcado para
+        demonstrar o rolamento.
+      </p>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("c");
+      const ctx = canvas.getContext("2d");
+      const btn = document.getElementById("btn");
+      const restart = document.getElementById("restart");
+      const info = document.getElementById("info");
+
+      function resize() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      // parâmetros em unidades (We'll scale to px for drawing)
+      const R = 100; // raio externo (unidades)
+      const r = 25; // raio interno
+      const T = 4.0; // período (s) para uma volta completa ao redor do interior
+
+      // escala para caber no canvas: usar 40-45% da menor dimensão para o raio externo
+      function computeScale() {
+        const minDim = Math.min(canvas.width, canvas.height);
+        return (minDim * 0.45) / R;
+      }
+
+      let scale = computeScale();
+
+      let startTime = performance.now();
+      let paused = false;
+      let pausedAt = 0;
+
+      btn.addEventListener("click", () => {
+        paused = !paused;
+        if (paused) {
+          pausedAt = performance.now();
+          btn.textContent = "Retomar";
+        } else {
+          // retomar
+          const dt = performance.now() - pausedAt;
+          startTime += dt;
+          btn.textContent = "Pausar";
+          requestAnimationFrame(loop);
+        }
+      });
+
+      restart.addEventListener("click", () => {
+        startTime = performance.now();
+        paused = false;
+        btn.textContent = "Pausar";
+        requestAnimationFrame(loop);
+      });
+
+      function drawScene(theta) {
+        // recalcular escala se necessário
+        scale = computeScale();
+        const Rpx = R * scale;
+        const rpx = r * scale;
+        const pathRadius = Rpx - rpx; // raio do centro do circulo menor
+
+        // centro do canvas
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        // posição do centro do circulo menor (coordenadas matemáticas, +y para cima)
+        const x_center = pathRadius * Math.cos(theta);
+        const y_center = pathRadius * Math.sin(theta);
+
+        // k = (R - r) / r : fator de rolamento interno
+        const k = (R - r) / r;
+
+        // ponto marcador absoluto usando fórmula paramétrica do ponto do contorno
+        const X = (Rpx - rpx) * Math.cos(theta) + rpx * Math.cos(k * theta);
+        const Y = (Rpx - rpx) * Math.sin(theta) - rpx * Math.sin(k * theta);
+
+        // limpar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // desenhar círculo maior (limite)
+        ctx.strokeStyle = "#2c3e50";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, Rpx, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // desenhar trajetória do centro do círculo menor
+        ctx.strokeStyle = "#bdc3c7";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 6]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, pathRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // centro do círculo menor em tela
+        const centerScreenX = cx + x_center;
+        const centerScreenY = cy - y_center;
+
+        // desenhar círculo menor
+        // desenhar círculo menor (preenchido para que o marcador fique visível sobre ele)
+        ctx.fillStyle = "#fff5eb";
+        ctx.beginPath();
+        ctx.arc(centerScreenX, centerScreenY, rpx, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#e67e22";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(centerScreenX, centerScreenY, rpx, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // desenhar marcador colado na borda interna do círculo menor e fazê-lo girar com a rotação física
+        const phi_marker = -k * theta; // rotação do círculo menor (sem deslizar)
+        const markerRadius = Math.max(3, rpx * 0.07); // pequeno o suficiente para caber
+        // distância do centro do pequeno circulo até o centro do marcador (fica dentro): rpx - markerRadius - 1
+        const markerDist = Math.max(0, rpx - markerRadius - 1);
+        const markerScreenX = centerScreenX + markerDist * Math.cos(phi_marker);
+        const markerScreenY = centerScreenY - markerDist * Math.sin(phi_marker);
+        ctx.fillStyle = "#c0392b";
+        ctx.beginPath();
+        ctx.arc(markerScreenX, markerScreenY, markerRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // desenhar um pequeno eixo no centro do grande círculo
+        ctx.fillStyle = "#34495e";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // texto
+        ctx.fillStyle = "#111";
+        ctx.font = "14px Arial";
+        ctx.fillText(
+          `t = ${((theta / (2 * Math.PI)) * T).toFixed(2)}s / ${T}s`,
+          12,
+          18
+        );
+        ctx.fillText(`voltas small per big = ${k.toFixed(2)}`, 12, 36);
+      }
+
+      function loop(now) {
+        if (paused) return;
+        const elapsed = (now - startTime) / 1000.0; // s
+        // valor t normalizado [0,1) por volta
+        const u = (elapsed % T) / T;
+        const theta = u * Math.PI * 2; // ângulo do centro (rad), aumenta => sentido anti-horário
+        drawScene(theta);
+        info.textContent = `θ=${theta.toFixed(3)} rad — u=${(u * 100).toFixed(
+          1
+        )}%`;
+        requestAnimationFrame(loop);
+      }
+
+      // iniciar
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

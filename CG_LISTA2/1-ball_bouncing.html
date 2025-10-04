@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bola quicando - Animação Canvas</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #222;
+        color: #ddd;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 18px auto;
+        padding: 12px;
+      }
+      canvas {
+        display: block;
+        background: #fff;
+        border: 1px solid #999;
+        width: 100%;
+        height: 500px;
+      }
+      .controls {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .info {
+        margin-left: auto;
+        font-size: 14px;
+        color: #bbb;
+      }
+      button {
+        padding: 6px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>Bola de raio 30 — colisões elásticas (Canvas)</h2>
+      <canvas id="canvas"></canvas>
+
+      <div class="controls">
+        <button id="btnPause">Pausar</button>
+        <label
+          >FPS:
+          <input
+            id="fps"
+            type="number"
+            value="60"
+            min="10"
+            max="240"
+            style="width: 70px"
+        /></label>
+        <div class="info" id="info"></div>
+      </div>
+
+      <p>
+        Assunções: o sistema usa unidades "por frame" conforme enunciado.
+        Velocidade vertical inicial é 10 unidades/frame para cima (implementada
+        como -10 no sistema de coordenadas do Canvas). Gravidade = 0.5 /frame²
+        (para baixo). O movimento horizontal ida-volta completa leva 4s
+        (configurado automaticamente conforme largura do canvas e FPS).
+      </p>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const infoEl = document.getElementById("info");
+      const btnPause = document.getElementById("btnPause");
+      const fpsInput = document.getElementById("fps");
+
+      const R = 30; // raio em unidades
+      let FPS = Number(fpsInput.value) || 60;
+
+      function resize() {
+        // Usamos tamanho CSS e atribuímos width/height reais para coordenadas
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        restartSim();
+      }
+
+      window.addEventListener("resize", resize);
+      fpsInput.addEventListener("change", () => {
+        FPS = Math.max(10, Math.min(240, Number(fpsInput.value) || 60));
+        restartSim();
+      });
+
+      // Parâmetros físicos (em unidades/frame)
+      const GRAVITY = 0.5; // /frame^2, para baixo
+      const INITIAL_VY = -10; // unidades/frame (negativo = sobe no sistema Canvas)
+
+      // Estado da simulação
+      let x, y, vx, vy;
+      let paused = false;
+
+      function restartSim() {
+        // posição inicial: canto inferior esquerdo (centro da bola em x = R, y = height - R)
+        x = R;
+        y = canvas.height - R;
+        vy = INITIAL_VY;
+
+        // calcular velocidade horizontal para que ida+volta durem 4s
+        // ida (esquerda->direita) dura 2s => framesHalf = 2*FPS
+        const framesHalf = 2 * FPS;
+        const travel = Math.max(0, canvas.width - 2 * R);
+        vx = travel / framesHalf; // unidades/frame
+      }
+
+      function step() {
+        // atualização por um frame (unidade de tempo = 1 frame)
+        vy += GRAVITY; // gravidade para baixo
+        x += vx;
+        y += vy;
+
+        const W = canvas.width,
+          H = canvas.height;
+
+        // colisões elásticas: inverter componente de velocidade sem perda de energia
+        if (x - R <= 0) {
+          x = R;
+          vx = Math.abs(vx);
+        }
+        if (x + R >= W) {
+          x = W - R;
+          vx = -Math.abs(vx);
+        }
+        if (y + R >= H) {
+          y = H - R;
+          vy = -Math.abs(vy);
+        }
+        if (y - R <= 0) {
+          y = R;
+          vy = Math.abs(vy);
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // chão e paredes visuais
+        ctx.fillStyle = "#eee";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // bola
+        ctx.beginPath();
+        ctx.fillStyle = "#c0392b";
+        ctx.arc(x, y, R, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#700";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // indicador de velocidade
+        ctx.fillStyle = "#111";
+        ctx.font = "14px Arial";
+        ctx.fillText(`vx: ${vx.toFixed(2)}  vy: ${vy.toFixed(2)}`, 12, 20);
+      }
+
+      // loop com atualização fixa em passos de 1/FPS segundos
+      let last = performance.now();
+      let accumulator = 0;
+      function loop(now) {
+        requestAnimationFrame(loop);
+        const dtMs = now - last;
+        last = now;
+        const frameMs = 1000 / FPS;
+        accumulator += dtMs;
+        // garantir progresso mesmo em frames mais lentos
+        let steps = 0;
+        while (accumulator >= frameMs && steps < 5) {
+          // limitar steps para evitar bloqueio
+          if (!paused) step();
+          accumulator -= frameMs;
+          steps++;
+        }
+        draw();
+        updateInfo();
+      }
+
+      function updateInfo() {
+        const period = 4; // segundos, conforme enunciado
+        infoEl.textContent = `Período ida-volta: ${period}s — raio ${R} — gravidade ${GRAVITY}/frame²`;
+      }
+
+      btnPause.addEventListener("click", () => {
+        paused = !paused;
+        btnPause.textContent = paused ? "Retomar" : "Pausar";
+      });
+
+      // inicialização
+      resize();
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
