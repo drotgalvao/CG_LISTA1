@@ -48,52 +48,6 @@ def homogeneous_from_RT(R, t):
     return H
 
 
-def explanation_text():
-    txt = """
-Resumo sucinto (em palavras):
-
-1) O que muda quando A e B rotacionam em torno de D
-- Antes: os planos A e B eram fixos; para detectar cruzamentos usamos sinais sA = nA·x - cA.
-- Agora: as superfícies A(t) e B(t) giram; isso implica que tanto o vetor normal quanto a constante
-  c dependem do tempo. Portanto a detecção de cruzamento passa a usar:
-      n_A(t)·x - c_A(t)
-  com n_A(t) = R_D(phi_A(t)) * nA0 e c_A(t) = n_A(t)·pA'(t), onde pA'(t) é um ponto da
-  superfície original rotacionado por R_D(phi_A(t)).
-
-2) Sentidos opostos: A no sentido horário (H) e B no sentido anti-horário (AH)
-- Representamos isso por phi_A(t) = +omega * t (por exemplo) e phi_B(t) = -omega * t.
-- Em termos de matrizes, H_rot_A(t) = Rot_D(phi_A(t)), H_rot_B(t) = Rot_D(phi_B(t)) = Rot_D(-phi_A(t)).
-
-3) Consequências práticas para a simulação e implementação
-- Ao calcular a posição atual da cabeça da serpente (ou qualquer ponto), a lógica de detecção de
-  cruzamento deve usar as versões rotacionadas dos planos: compute n_A(t), pA'(t) e c_A(t) a cada frame.
-- Se quiser refletir um conjunto de pontos no instante t, aplique a matriz de reflexão H_C (fixa)
-  sobre esses pontos como antes; a reflexão não muda (plano C fixo), mas a condição que dispara a reflexão
-  depende de A(t)/B(t).
-- Se os planos também se deslocam (além de rotacionarem), você deve atualizar o ponto de referência
-  de cada plano do mesmo modo (aplicar H_rot_D ao ponto de referência).
-
-4) Matematicamente (passo a passo para implementação)
-- Dado nA0, escolha um ponto pA0 satisfazendo nA0·pA0 = cA0.
-- Em cada tempo t, calcule R = rotation_about_line(pD, uD, phi_A(t)) (ou sua parte 3x3 R)
-- nA(t) = R * nA0
-- pA'(t) = R * pA0 + t_trans (usando a homogênea se rot+trans COMBINADAS)
-- cA(t) = nA(t)·pA'(t)
-- Use sA(t) = nA(t)·x - cA(t) para detecção.
-
-5) Observação sobre robustez numérica
-- Para evitar falsos positivos por passar exatamente no limite, teste cruzamentos por mudança de sinal
-  entre frames consecutivos (como já tínhamos) e considere um limiar pequeno para ruído numérico.
-
-6) Caso queira arquivar a história (por exemplo, para aplicar reflexões retroativas)
-- Armazene, para cada frame, a transformação R_D usada para as superfícies naquele frame; isso permite
-  transformar/trazer vetores entre referenciais do tempo.
-
-Fim do resumo.
-"""
-    return txt
-
-
 def demo_simulation():
     # pequena demo que implementa A(t) e B(t) rotacionando em sentidos opostos em torno de D
     import matplotlib.pyplot as plt
@@ -243,5 +197,4 @@ def demo_simulation():
 
 
 if __name__ == "__main__":
-    print(explanation_text())
     demo_simulation()
