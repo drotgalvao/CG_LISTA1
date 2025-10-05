@@ -1,0 +1,4 @@
+Canny parameter sweep summary
+best_orig_majority=(np.int64(50), np.int64(200))
+best_blur_majority=(np.int64(50), np.int64(200))
+Processed images: group1 orig and blur. If group2 existed, applied chosen params.

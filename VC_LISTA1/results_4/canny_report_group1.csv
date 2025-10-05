@@ -1,0 +1,9 @@
+image,preprocess,best_low,best_high,best_count,median_count
+canguru.bmp,False,50,200,45009,39868
+cavalo.bmp,False,50,200,53249,52526
+indio.bmp,False,50,200,18663,17504
+tigre.bmp,False,50,200,20334,18746
+canguru.bmp,True,50,200,7393,6957
+cavalo.bmp,True,50,200,32893,28363
+indio.bmp,True,50,200,8408,7672
+tigre.bmp,True,50,200,8792,8560
