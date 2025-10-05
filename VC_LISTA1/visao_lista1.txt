@@ -1,0 +1,74 @@
+﻿Visão Computacional: Lista 1
+
+
+parte 1: Tratamento de imagem
+ 
+  
+
+vamo brincar com as pics compartilhadas
+
+
+1. a) Binarização é uma operação comum no processamento de imagens. 
+Aplique binarização sobre as imagens e interprete como diferentes técnicas alteram as imagens e como essas interpretações são representadas no histograma. Que tipo de informação o histograma de uma imagem pode trazer quanto a uma previsão de possível resultado satisfatório ou não da aplicação de um algoritmo de binarização? 
+
+
+b) Contraste e brilho são características comuns de imagens digitais. Aplique operações de alteração de contraste e brilho (umas 2-3 operações de cada tipo) em uma imagem e gere o histograma da imagem. Quais operações alteram a posição do histograma (mas não necessariamente sua forma)? E a distribuição de valores no histograma? De que forma seria feita uma correlação entre os efeitos visuais e os estatísticos e , em quais casos os ajustes pioram a qualidade da imagem?
+
+
+
+
+2. a) Considere dois filtros: h1 como o filtro Box 3x3 e h2 como o filtro Laplaciano 3x3. Para uma das imagens e convertida em tons de cinza foi, aplique os  filtros de duas formas: 
+* (i) h1*(h2*Imagem)
+* (ii) h2*(h1*Imagem). 
+
+
+e gere os resultados e os histogramas. Há diferenças (teoricamente) nesses resultados? Construa um novo filtro através da convolução discreta de h1 e h2, ou seja, h1*h2. O resultado da filtragem de I por esse novo filtro (h1*h2)*I deve ser igual ou diferente dos anteriores? Justifique. 
+
+
+(considere * a operação de convolução)
+
+
+b)  Qual o resultado esperado de uma operação que calcula a diferença absoluta entre uma imagem (em tons de cinza com tons entre 0 e 255) e essa mesma imagem filtrada por um filtro passa-baixa (um filtro Box, por exemplo)? Que tipo de filtro alcançaria esse mesmo resultado? Aplique as operações e explique em detalhes
+
+
+c) As imagens abaixo (ambas em preto e branco apenas) são bastante diferentes, mas seus histogramas são absolutamente iguais. Suponha que cada imagem é embaçada com um filtro da média 3x3. Os histogramas das imagens embaçadas ainda serão iguais? Justifique e esboce como devem ser o(s) histograma(s). (As bordas não fazem parte das figuras; são apenas para melhor visualização)
+
+
+  
+
+
+
+d) na pasta de imagens, no grupo 2, temos duas imagens arara1 e arara 2:
+  
+
+seus histogramas também são iguais? E, se aplicamos um filtro de média, teremos resultados similares? Teste e explique os resultados
+
+
+3) Compare a efetividade de diferentes filtros espaciais e no domínio da frequência nas imagens do grupo 1 e do grupo 2. Quais filtros espaciais tem efeitos melhores e por que? E quanto aos filtros no domínio da frequência, quais são os melhores parâmetros que geram melhores resultados? Comparando classes similares de filtro (tipo filtros passa-baixa) quais são as melhores abordagens espaciais e na frequência?
+Avaliações podem ser randomizadas, estatísticas ou correlacionais e podem incluir histogramas. 
+
+
+ 
+Parte 2: Segmentação
+
+
+
+
+1. a) Teste diferentes parâmetros do algoritmo de detecção de bordas de Canny esses nas imagens do grupo 1. Guarde os resultados e compare a variação de parâmetros (por exemplo, dentro de uma faixa de valores) com os melhores resultados no quesito da detecção das bordas relevantes.
+
+
+b) Em um segundo momento, aplique um método pré-processamento nas imagens (como alguns filtros) e, novamente, use os mesmos parâmetros que usou antes. Os resultados ficaram melhores? 
+Justifique sua escolha para o pré-processamento. Idealmente, use um pré-processamento único para todas as imagens. 
+
+
+c) A partir dos melhores resultados de pré-processamento e de parâmetros do algoritmo de Canny, aplique o método nas imagens do grupo 2. Os resultados foram satisfatórios? Justifique e sugira correções, comparando com o resultado preliminar obtido.
+
+
+2. a) Aplique o algoritmo de Mean Shift nas imagens do grupo 1, variando as configurações de seus parâmetros hs e hr. Analise seus resultados. De preferência, teste as variações em uma versão reduzida das imagens primeiro até encontrar uma configuração que pareça eficiente. 
+
+
+b) Aplique o algoritmo de Canny para detecção de bordas (com os mesmos parâmetros que usou na questão 1) nas imagens geradas na questão anterior (parte 2,  2.a) . As bordas foram mais facilmente detectadas? 
+c) Aplique a configuração encontrada para o mean shift nas imagens do grupo 2 e refaça a análise de bordas usando o algoritmo de Canny, como na questão 1c. Comente os resultados obtidos.
+
+
+A seu critério, escolha as imagens com ou sem pré-processamento.

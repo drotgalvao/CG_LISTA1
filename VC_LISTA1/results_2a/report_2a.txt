@@ -1,0 +1,5 @@
+base	diff_norm	combined_minus_ordered_norm
+canguru	0.000000	543509.258752
+cavalo	0.000000	791733.984430
+indio	0.000000	885130.802659
+tigre	0.000000	430860.788626
