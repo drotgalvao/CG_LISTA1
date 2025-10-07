@@ -1,0 +1,5 @@
+group,image,sp,sr,out_filtered,out_edges
+group1,canguru.bmp,30,10,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\canguru_ms_sp30_sr10.png,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\canguru_ms_sp30_sr10_edges.png
+group1,cavalo.bmp,30,10,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\cavalo_ms_sp30_sr10.png,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\cavalo_ms_sp30_sr10_edges.png
+group1,indio.bmp,30,10,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\indio_ms_sp30_sr10.png,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\indio_ms_sp30_sr10_edges.png
+group1,tigre.bmp,30,10,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\tigre_ms_sp30_sr10.png,C:\Users\diego\pro\python\FACULDADE_99\COMPUTACAO_GRAFICA\CG_LISTA1\VC_LISTA1\results_5\group1\tigre_ms_sp30_sr10_edges.png
